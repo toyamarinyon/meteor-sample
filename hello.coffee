@@ -5,7 +5,7 @@
 		return false
 	if not bookmark.url.match /https?:\/\//
 		return false
-	if note bookmark.user
+	if not bookmark.user
 		return false
 	return true
 
@@ -28,12 +28,53 @@ if Meteor.is_client
 		'click button' : () ->
 			bookmark =
 				user: Session.get "user"
-				title:$('#form-url').val()
+				url:$('#form-url').val()
 				title:$('#form-title').val()
-				title:$('#form-quote').val()
-				title:$('#form-comment').val()
+				quote:$('#form-quote').val()
+				comment:$('#form-comment').val()
 				posted_at: Date.now()
 
 		if not Bookmarks.validate bookmark
 			alert 'failed validation'
 			return
+
+		entry = Bookmarks.findOne user: bookmark.userm url:bookmark.url
+		if entry
+			Bookmarks.update { _id: entry._id}, { $set: title: bookmark.title, comment: bookmark.comment, quote: bookmark.quote }
+		else
+			Bookmarks.insert bookmark
+
+		for elem in ['url', 'title', 'quote', 'comment']
+			$("#form-#[elem}").val("")
+
+	Template.bookmark.host = (url) ->
+		return url.split("/")[2]
+
+	Template.bookmarks.bookmarks = () ->
+		user_filter = Session.get 'user_filter'
+		selector = if user_filter then { user: user_filter } else{}
+		return Bookmarks.find selector, { sort: {pasted_ad: -1 } }
+
+	Template.bookmarks.events =
+		'click span.navigate' : () ->
+			Router.navigate "", true
+
+	Template.bookmarks.user_filter = () ->
+		return Session.get 'user_filter'
+
+	BookmarkRouter = Backbone.Router.extend
+		routes:
+			"" : "timeline"
+			":user" : "bookmarks"
+		timeline : () ->
+			Session.set 'user_filter', null
+		bookmarks : (user) ->
+			Session.set 'user_filter', user
+
+	Router = new BookmarkRouter
+
+	Meteor.startup () ->
+		Backbone.history.start pushState: true
+
+if Meteor.is_server
+	Meteor.startup () ->

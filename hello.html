@@ -11,7 +11,7 @@
 		<h1>Social Nookmark</h1>
 
 		{{#if user}}
-			<p class="login">login as<span id="user" class="uesr">{{user}}</span></p>
+			<p class="login">login as<span id="user" class="user">{{user}}</span></p>
 			{{> entry}}
 			{{> bookmarks}}
 		{{else}}
@@ -32,7 +32,7 @@
 
 <template name="bookmarks">
 	<div id="bookmarks" class="bookmarks">
-		{{$if user_filter}}
+		{{#if user_filter}}
 			<p>&laquo; <span class="navigate">Back to public timeline.</span></p>
 		{{/if}}
 
@@ -44,11 +44,11 @@
 	</div>
 </template>
 
-<template>
+<template name="bookmark">
 	<dt><span class="user">{{user}}</span></dt>
-	{{$if comment}}
-	<dd>{comment}}</dd>
-	{/if}}
+	{{#if comment}}
+	<dd>{{comment}}</dd>
+	{{/if}}
 	<dd><a href="{{url}}">{{#if title}}{{title}}{{else}}{{url}}{{/if}}</a></dd>
 	<dd class="domain"><a href="{{url}}">{{host url}}</a></dd>
 	{{#if quote}}
